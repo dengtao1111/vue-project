@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.js"></script>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.css" rel="stylesheet">
+    <meta name="referrer" content="no-referrer" />
+    <style>
+        .pic{
+            width: 50px;
+            height: 70px;
+        }
+        .number{
+            width: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <h2 class="text-center text-success">购物车</h2>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>全选 <input type="checkbox" v-model="checkAll"></th>
+                    <th>商品</th>
+                    <th>单价</th>
+                    <th>数量</th>
+                    <th>小计</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(item,index) of products">
+                    <td><input type="checkbox" v-model="item.isSelected"></td>
+                    <td><img class="pic" :src="item.productCover" alt="">{{item.productName}}</td>
+                    <td>{{item.productPrice}}</td>
+                    <td><input class="number" type="number" min="1" v-model.number="item.productCount"/></td>
+                    <td>{{item.productPrice*item.productCount |format(2)}}</td>
+                    <td><button type="button" class="btn btn-danger" @click="handleDelete(index)">删除</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <p>总值:{{sum | format(2)}}</p>
+    </div>
+    <script>
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                products: []
+            },
+            mounted() {
+                axios.get('./data/carts.json').then(res => {
+                   this.products = res.data
+                })
+            },
+            filters:{
+                format(val,params){
+                    return "$"+val.toFixed(params);
+                }
+            },
+            filters:{
+                format(val,params){
+                    return "$"+val.toFixed(params);
+                }
+            },
+            computed: {
+                checkAll:{
+                    get(){
+                      return this.products.every(item=>item.isSelected)  
+                    },
+                    set(val){
+                        this.products.forEach(item=>item.isSelected=val)
+                    }
+                },
+                sum(){
+                    var total = 0;
+                    this.products.forEach(item=>{
+                        total = item.productPrice*item.productCount+total
+                    })
+                    return total;
+                }
+            },
+            methods: {
+                handleDelete(index){
+                      this.products.splice(index,1)
+                }
+            },
+        })
+    </script>
+</body>
+
+</html>
